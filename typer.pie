@@ -1,0 +1,247 @@
+#lang pie
+
+(claim step-+
+  (-> Nat
+      Nat))
+
+(define step-+
+  (λ (n)
+    (add1 n)))
+
+(claim +
+  (-> Nat Nat
+      Nat))
+
+(define +
+  (λ (n j)
+    (iter-Nat n
+      j
+      step-+)))
+
+(claim pairwise+
+  (-> (Pair Nat Nat) (Pair Nat Nat)
+      (Pair Nat Nat)))
+
+(define pairwise+
+  (λ (p1 p2)
+    (cons (+ (car p1) (car p2))
+          (+ (cdr p1) (cdr p2)))))
+
+
+;;;;;;;
+(claim gauss-step
+  (-> Nat Nat
+      Nat))
+
+(define gauss-step
+  (λ (n-1 gauss-n-1)
+    (+ (add1 n-1) gauss-n-1)))
+
+(claim gauss
+  (-> Nat
+      Nat))
+
+(define gauss
+  (λ (n)
+    (rec-Nat n
+      0
+      gauss-step)))
+
+
+;;;;;;;;;;;;
+;; Defining multiplication
+
+(claim step-*
+  (-> Nat Nat Nat ; first arg is j -- bound to be used later so we know what to add together
+          Nat))
+
+(define step-*
+  (λ (j n-1 almost-*)
+    (+ j almost-*)))
+
+(claim *
+  (-> Nat Nat
+      Nat))
+
+(define *
+  (λ (n j)
+    (rec-Nat n
+      0              ; (* 0 anything) needs to be 0 and (* anything 0) needs to be 0
+      (step-* j))))  ; Her is where j is remembered
+
+
+;;;;;;;;;;
+;; This is an exercise which could be on the blog
+
+(claim step-factorial
+  (-> Nat Nat
+      Nat))
+
+(define step-factorial
+  (λ (n-1 fact-1)
+    (* (add1 n-1) fact-1)))
+
+(claim factorial
+  (-> Nat
+      Nat))
+
+(define factorial
+  (λ (n)
+    (rec-Nat n
+      1
+      step-factorial)))
+
+
+;;;;;;;
+;; less-than
+;; This is harder to write. I don't think I have the tools to do this now. Maybe this is where
+;; inductive datatypes come to play?
+;; It amazes me that we don't have the skills at this point to figure out the relation of less-than.
+;;
+;(claim
+;  (-> Nat Nat
+;      Atom))
+;
+;(define less-than
+;  (λ (j k)))
+
+;; Here is an example of me implementing which-Nat with rec-Nat
+
+(claim my-which-Nat-step
+  (Pi ((X U))
+    (-> Nat X
+        X)))
+
+(define my-which-Nat-step
+  (λ (X n-1 almost)
+    almost))
+
+(claim my-which-Nat
+  (Pi ((X U))
+    (-> Nat X (-> Nat
+                X)
+      X)))
+  
+(define my-which-Nat
+  (λ (X target base step)
+    (rec-Nat target
+      base
+      (my-which-Nat-step X))))
+
+
+;                                                               
+;   ;       ;;;;;;;;  ;;     ;      ;;;;    ;;;;;;;;; ;      ;  
+;   ;       ;         ;;     ;     ;    ;       ;     ;      ;  
+;   ;       ;         ; ;    ;    ;      ;      ;     ;      ;  
+;   ;       ;         ; ;    ;   ;        ;     ;     ;      ;  
+;   ;       ;         ;  ;   ;   ;              ;     ;      ;  
+;   ;       ;;;;;;;;  ;   ;  ;   ;    ;;;;;     ;     ;;;;;;;;  
+;   ;       ;         ;   ;  ;   ;        ;     ;     ;      ;  
+;   ;       ;         ;    ; ;   ;        ;     ;     ;      ;  
+;   ;       ;         ;    ; ;    ;      ;;     ;     ;      ;  
+;   ;       ;         ;     ;;     ;    ; ;     ;     ;      ;  
+;   ;;;;;;; ;;;;;;;;  ;     ;;      ;;;;  ;     ;     ;      ;  
+;                                                               
+;                                                               
+;                                                               
+
+
+(claim step-length
+  (Pi ((E U))
+    (-> E (List E) Nat
+      Nat)))
+
+(define step-length
+  (λ (E e es n-1)
+    (add1 n-1)))
+
+(claim length
+  (Pi ((E U))
+    (-> (List E)
+      Nat)))
+
+;; (length Nat (:: 3 (:: 2 (:: 1 nil))))
+(define length
+  (λ (E list)
+    (rec-List list
+      0
+      (step-length E))))
+
+
+
+
+;                                                                                     
+;   ;;;;;;;;   ;;;;;;;;  ;;;;;;;   ;        ;     ;;;;        ;    ;;;;;;;;; ;;;;;;;; 
+;   ;       ;  ;         ;      ;  ;        ;    ;    ;      ; ;       ;     ;        
+;   ;       ;  ;         ;      ;  ;        ;   ;      ;     ; ;       ;     ;        
+;   ;       ;  ;         ;      ;  ;        ;  ;        ;    ; ;       ;     ;        
+;   ;      ;   ;         ;      ;  ;        ;  ;            ;   ;      ;     ;        
+;   ;;;;;;;    ;;;;;;;;  ;;;;;;;   ;        ;  ;            ;   ;      ;     ;;;;;;;; 
+;   ;      ;   ;         ;         ;        ;  ;            ;   ;      ;     ;        
+;   ;       ;  ;         ;         ;        ;  ;        ;  ;;;;;;;     ;     ;        
+;   ;       ;  ;         ;         ;        ;   ;      ;   ;     ;     ;     ;        
+;   ;       ;  ;         ;         ;        ;    ;    ;    ;     ;     ;     ;        
+;   ;       ;; ;;;;;;;;  ;         ;;;;;;;  ;     ;;;;    ;       ;    ;     ;;;;;;;; 
+;                                                                                     
+;                                                                                     
+;                                                                                     
+                                                           
+
+
+(claim list-step-replicate
+  (Pi ((E U))
+    (-> E Nat (List E)
+        (List E))))
+
+(define list-step-replicate
+  (λ (E e n list)
+    (:: e list)))
+
+(claim list-replicate
+  (Pi ((E U))
+    (-> Nat E
+      (List E))))
+
+(define list-replicate
+  (λ (E n e)
+    (rec-Nat n
+      (the (List E) nil)
+      (list-step-replicate E e))))
+
+;; (list-replicate Nat 3 3)
+;; (list-replicate (List Atom) 4 (:: 'banana (:: 'mangos nil)))
+
+
+;                                               
+;   ;  ;                                   ;  ; 
+;   ;             ;                        ;  ; 
+;   ;             ;                        ;  ; 
+;   ;  ;   ;;;;  ;;;;      ; ;;;   ;    ;  ;  ; 
+;   ;  ;  ;    ;  ;        ;;   ;  ;    ;  ;  ; 
+;   ;  ;  ;       ;        ;    ;  ;    ;  ;  ; 
+;   ;  ;   ;;     ;  ;;;;  ;    ;  ;    ;  ;  ; 
+;   ;  ;     ;;   ;        ;    ;  ;    ;  ;  ; 
+;   ;  ;  ;    ;  ;        ;    ;  ;    ;  ;  ; 
+;   ;  ;  ;    ;  ;        ;    ;  ;   ;;  ;  ; 
+;   ;  ;   ;;;;   ;;;      ;    ;   ;;; ;  ;  ; 
+;                                               
+;                                               
+;                                               
+
+(claim list-null
+  (Pi ((E U))
+    (-> (List E)
+        Atom)))
+
+(define list-null
+  (λ (E es)
+    (which-Nat (length E es)
+      't
+      (λ (es)
+        'nil))))
+
+;; (list-null Nat (:: 1 nil))
+;; (list-null Nat nil)
+
+;; TODO: Implement
+;;intersperse :: a -> [a] -> [a]
